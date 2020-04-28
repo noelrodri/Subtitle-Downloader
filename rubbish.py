@@ -243,7 +243,7 @@ class OpenSubtitles:
 
         return results
 
-    def clean_results(self, results, imdb=False):
+    def clean_results(self, results):
         subtitles = {}
         user_ranks = {'administrator': 1,
                       'platinum member': 2,
@@ -271,15 +271,6 @@ class OpenSubtitles:
                     continue
 
                 user_rank = user_ranks[result['UserRank']]
-
-                if imdb:
-                    cleaned_release_name = clean_name(result['MovieReleaseName'])
-                    file_name = self.moviefiles[movie_hash]['file_name']
-                    cleaned_file_name = clean_name(file_name)
-                    overlap = len(set.intersection(set(cleaned_release_name), set(cleaned_file_name)))
-                else:
-                    overlap = 0
-
                 subtitles.setdefault(movie_hash, []).append((subid, downcount, rating, user_rank, IDMovieImdb))
 
         return subtitles
