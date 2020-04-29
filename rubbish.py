@@ -71,7 +71,7 @@ def calc_file_hash(filepath):
         raise
 
 
-tv_show_regex = re.compile(r"(?:[^\\]\\)*(?P<SeriesName>.*) S?(?P<SeasonNumber>[0-9]+)(?:[ .XE]+(?P<EpisodeNumber>[0-9]+))(?P<Teams>.*)", re.IGNORECASE)
+tv_show_regex = re.compile(r"(?:[^\\]\\)*(?P<SeriesName>.*) S?(?P<SeasonNumber>[0-9]+)(?:[ .XE]+(?P<EpisodeNumber>[0-9]+))(?P<Teams>.*)", re.I)
 
 
 movie_regex = re.compile('(?P<movie>.*)[\.|\[|\(| ]{1}(?P<year>(?:(?:19|20)[0-9]{2}))(?P<teams>.*)', re.IGNORECASE)
@@ -84,7 +84,6 @@ def unicode(arg):
 def clean_name(name):
     ''' Cleans the file name of non alpha numeric characters and extra spaces.'''
 
-    # pattern = re.compile('[\W_]+')
     name = re.sub('[\W_]+', ' ', unicode(name.lower()))
     name = re.sub(r"\s+", ' ', name)
     return name
@@ -97,10 +96,6 @@ def guess_file_data(filename):
 
     if matches_tvshow and not matches_movie:
         (tvshow, season, episode, teams) = matches_tvshow.groups()
-        # print(tvshow)
-        # print(season)
-        # print(episode)
-        # print(teams)
         teams = teams.split()
         data = {
             'type': 'tvshow',
@@ -318,30 +313,28 @@ def process_queue(queue):
     addic7ed_list = []
     opensubs_dict = {}
 
-    for x in range(queue.qsize()):
         video = queue.get_nowait()
+    for video in queue:
         if video['type'] == 'Addic7ed':
             addic7ed_list.append(video)
-        else:
-            queue.put_nowait(video)
 
     # if addic7ed_list:
     #     catch_all('Addic7ed', addic7ed_list)
 
     # time.sleep(0.01)  # To prevent race condition
 
-    opensubs_list = [queue.get_nowait() for x in range(queue.qsize())]
+    for video in queue:
+        if video['type'] == 'OpenSubtitles':
+            opensubs_dict[video['moviehash']] = video
 
-    for x in opensubs_list:
-        opensubs_dict[x['moviehash']] = x
+    print(opensubs_dict)
+    # if opensubs_dict:
 
-    if opensubs_dict:
-
-        sub = OpenSubtitles()
-        sub.process(opensubs_dict)
+    #     sub = OpenSubtitles()
+    #     sub.process(opensubs_dict)
 
 
-_queue = Queue()
+movie_queue = []
 
 
 def add_to_processing_queue(filename, parentdir):  # called by check_and_add and creates _queue
@@ -349,8 +342,8 @@ def add_to_processing_queue(filename, parentdir):  # called by check_and_add and
     filehash = calc_file_hash(os.path.join(parentdir, filename))
     filesize = os.path.getsize(os.path.join(parentdir, filename))
     save_to_path = os.path.join(parentdir, os.path.splitext(filename)[0] + '.srt')
-    _queue.put({'file_name': filename, 'type': 'Addic7ed' if check_tvshow(filename) else 'OpenSubtitles', 'save_subs_to': save_to_path, 'moviehash': filehash,
-                'moviebytesize': str(filesize)})
+    movie_queue.append({'file_name': filename, 'type': 'Addic7ed' if check_tvshow(filename) else 'OpenSubtitles', 'save_subs_to': save_to_path, 'moviehash': filehash,
+                        'moviebytesize': str(filesize)})
 
 
 cancelled = False
@@ -381,9 +374,9 @@ def file_paths(input_path):          # mine
     return file_list
 
 
-input_path = "E:\\movies\\Men In Black International (2019) [WEBRip] [720p] [YTS.LT]"
+input_path = "E:\\To Catch A Thief (1955) [BluRay] [720p] [YTS.AM]"
 
 check_and_add(file_paths(input_path))
 
 
-process_queue(_queue)
+process_queue(movie_queue)
