@@ -313,7 +313,6 @@ def process_queue(queue):
     addic7ed_list = []
     opensubs_dict = {}
 
-        video = queue.get_nowait()
     for video in queue:
         if video['type'] == 'Addic7ed':
             addic7ed_list.append(video)
