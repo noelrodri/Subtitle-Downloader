@@ -220,7 +220,7 @@ class Addic7ed:
                 save_to = details_dict['save_subs_to']
 
                 try:
-                    (searched_url, downloadlink) = self._query(filename)
+                    searched_url, downloadlink = self._query(filename)
                     if downloadlink:
                         subs = self.download_subtitles(searched_url, downloadlink, filename)
                     else:
