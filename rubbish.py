@@ -214,36 +214,38 @@ class Addic7ed:
 
     def run(self):
         print('Querying Addic7ed.com...', 'info')
-        for details_dict in self.files_list[:]:
-            if not self.stopping:
-                filename = details_dict['file_name']
-                save_to = details_dict['save_subs_to']
+        for details_dict in self.files_list:
 
-                try:
-                    searched_url, downloadlink = self._query(filename)
-                    if downloadlink:
-                        subs = self.download_subtitles(searched_url, downloadlink, filename)
-                    else:
-                        print('Nothing found.', 'error')
-                        print(details_dict)
-                        continue
+            filename = details_dict['file_name']
+            save_to = details_dict['save_subs_to']
 
-                except NoInternetConnectionFound:
-                    print('No active Internet connection found. Kindly check and try again.', 'error')
-                except:  # utils.DailyDownloadLimitExceeded:
-                    for details_dict in self.files_list:
-                        (details_dict)
-                    raise
+            try:
+                searched_url, downloadlink = self._query(filename)
+                if downloadlink:
+                    subs = self.download_subtitles(searched_url, downloadlink, filename)
                 else:
-                    save_subs(subs, save_to)
-                    self.files_list.remove(details_dict)
+                    print('Nothing found.', 'error')
+                    print(details_dict)
+                    continue
+
+            except NoInternetConnectionFound:
+                print('No active Internet connection found. Kindly check and try again.')
+            except:  # utils.DailyDownloadLimitExceeded:
+                for details_dict in self.files_list:
+                    print(details_dict, "limit exceeded")
+                raise
+            else:
+                save_subs(subs, save_to)
+                self.files_list.remove(details_dict)
+
+        return self.file_list
 
     def process(self, files_list, lang='English'):
         '''Given filename and the wished language, searches and downloads the best match found from Addic7ed.com'''
+
         self.lang = lang
         self.files_list = files_list
-        if not self.stopping:
-            self.run()
+        self.run()
 
     def stopTask(self):
         self.stopping = True
@@ -337,9 +339,10 @@ def process_queue(queue):
         if video['type'] == 'Addic7ed':
             addic7ed_list.append(video)
 
-    if addic7ed_list:
-        ad = Addic7ed()
-        ad.process(addic7ed_list)
+    print(addic7ed_list)
+    # if addic7ed_list:
+    #     ad = Addic7ed()
+    #     ad.process(addic7ed_list)
 
     # time.sleep(0.01)  # To prevent race condition
 
