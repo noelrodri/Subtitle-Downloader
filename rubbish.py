@@ -214,8 +214,8 @@ class Addic7ed:
 
     def run(self):
         print('Querying Addic7ed.com...', 'info')
-        for details_dict in self.files_list:
 
+        for details_dict in self.files_list:
             filename = details_dict['file_name']
             save_to = details_dict['save_subs_to']
 
@@ -234,12 +234,11 @@ class Addic7ed:
                 for details_dict in self.files_list:
                     print(details_dict, "limit exceeded")
                 raise
+
             else:
                 save_subs(subs, save_to)
                 self.files_list.remove(details_dict)
-
         return self.file_list
->>>>>>> Stashed changes
 
     def process(self, files_list, lang='English'):
         '''Given filename and the wished language, searches and downloads the best match found from Addic7ed.com'''
@@ -257,6 +256,9 @@ class Addic7ed:
         teams = guessed_file_data.get('teams')
 
         lang_url = LANGUAGES[self.lang][0]
+        searchurl = f'{self.host}/serie/{name}/{season}/{episode}/{lang_url}'
+        print(searchurl)
+        return
 
         name = name.lower().replace(' ', '_')
         teams = set(teams)
