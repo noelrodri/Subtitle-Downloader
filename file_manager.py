@@ -37,5 +37,4 @@ tla
 dvdrip .x264-tastetv
 '''
 
-
-print(set(re.split(r'\.| - ', strs)))
+links = [ < a class = "buttonDownload" href = "/original/105576/1" > <strong > Download < /strong > </a > ]

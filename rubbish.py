@@ -258,8 +258,6 @@ class Addic7ed:
         lang_url = LANGUAGES[self.lang][0]
         searchurl = f'{self.host}/serie/{name}/{season}/{episode}/{lang_url}'
         print(searchurl)
-        return
-
         name = name.lower().replace(' ', '_')
         teams = set(teams)
 
@@ -269,7 +267,7 @@ class Addic7ed:
         if not page_html.strip():
             return searchurl, None
         soup = BeautifulSoup(page_html, features='lxml')
-        release_pattern = re.compile(r'Version (.*),')
+        release_pattern = re.compile(r'Version (.*),', re.I)
         team_split = re.compile(r'\.| - ')
 
         try:
@@ -277,32 +275,19 @@ class Addic7ed:
             result = []
 
             for subs in sub_list:
-                subteams = set(team_split.split(release_pattern.findall(subs.get_text()[0].lower())))
-                langs_html = subs.find_next('td', {'class': 'language'})
-                statusTD = langs_html.find_next('td')
-                status = statusTD.text.strip()
-                links = statusTD.find_next('td').find_all('a')
-                link = '%s%s' % ('http://www.addic7ed.com', links[len(links) - 1]['href'])
+                subteams = set(team_split.split(release_pattern.findall(subs.get_text().lower())[0]))
 
+                link = f'http://www.addic7ed.com{subs.parent.parent.select(".buttonDownload")[0].get("href")}'
                 b = {}
                 b['link'] = link
 
-                if status == 'Completed':
-                    b['completed'] = 1
-                    sub_quality = subs.parent.parent.find_all('a', {'class': 'buttonDownload'})[0].text
-
-                    if sub_quality == u'original' or sub_quality == u'most updated':
-                        b['best_match'] = 1
-                    else:
-                        b['best_match'] = 0
-                else:
-                    b['completed'] = 0
-
-                print(subteams, teams, "before if ")
                 if subteams.issubset(teams):
                     b['overlap'] = len(set.intersection(teams, subteams))   # check match of teams
                 else:
                     b['overlap'] = 0
+
+                b['download_count'] = int(subs.parent.parent.findAll('td', {'class': 'newsDate', 'colspan': '2'})[0].get_text().strip().split()[4])
+
                 result.append(b)
         except:
             print('Following unknown exception occured:\n%s' % traceback.format_exc(), 'error')
@@ -311,7 +296,7 @@ class Addic7ed:
             if result:
                 # Sort the results found by completed, overlapping, best_match
 
-                best_match = sorted(result, key=itemgetter('completed', 'overlap', 'best_match'), reverse=True)[0]
+                best_match = sorted(result, key=itemgetter('overlap', 'download_count'), reverse=True)[0]
 
         return (searchurl, best_match.get('link') if best_match else None)
 
