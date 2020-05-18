@@ -239,6 +239,7 @@ class Addic7ed:
                 self.files_list.remove(details_dict)
 
         return self.file_list
+>>>>>>> Stashed changes
 
     def process(self, files_list, lang='English'):
         '''Given filename and the wished language, searches and downloads the best match found from Addic7ed.com'''
