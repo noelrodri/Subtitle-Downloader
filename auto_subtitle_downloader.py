@@ -112,7 +112,7 @@ class SubsceneDowlaod:
             if(len(href) > 0):
                 r = requests.get("http://subscene.com" + href)
                 soup = BeautifulSoup(r.content, "lxml")
-                lin = soup.find_all('a', attrs={'id': 'downloadButton'})[0].get("href")
+                lin = soup.find_all('a', attrs={'id': 'downloadButton'})[0].get("href")  # multi attribute find
                 print('this lint', lin)
                 r = requests.get("http://subscene.com" + lin)
                 self.subtitle_file_handler(r)

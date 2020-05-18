@@ -247,20 +247,6 @@ class Addic7ed:
         self.files_list = files_list
         self.run()
 
-    def stopTask(self):
-        self.stopping = True
-
-    def _listTeams(self, subteams, separators):
-        for sep in separators:
-            subteams = self._splitTeam(subteams, sep)
-        return set(subteams)
-
-    def _splitTeam(self, subteams, sep):
-        teams = []
-        for t in subteams:
-            teams += t.split(sep)
-        return teams
-
     def _query(self, filename):
         print('Searching Addic7ed.com for %s' % filename, 'info')
         guessed_file_data = guess_file_data(filename)
@@ -279,17 +265,17 @@ class Addic7ed:
 
         page_html = download_url_content(searchurl)
         if not page_html.strip():
-            return (searchurl, None)
+            return searchurl, None
         soup = BeautifulSoup(page_html, features='lxml')
-        release_pattern = re.compile('Version (.+), ([0-9]+).([0-9])+ MBs')
+        release_pattern = re.compile(r'Version (.*),')
+        team_split = re.compile(r'\.| - ')
 
         try:
-            sub_list = soup.findAll('td', {'class': 'NewsTitle', 'colspan': '3'})
+            sub_list = soup.find_all('td', {'class': 'NewsTitle', 'align': 'center'})
             result = []
 
             for subs in sub_list:
-                subteams = release_pattern.match(subs.contents[1].strip()).groups()[0].lower()
-                subteams = self._listTeams([subteams], ['.', '_', ' '])
+                subteams = set(team_split.split(release_pattern.findall(subs.get_text()[0].lower())))
                 langs_html = subs.find_next('td', {'class': 'language'})
                 statusTD = langs_html.find_next('td')
                 status = statusTD.text.strip()
@@ -302,6 +288,7 @@ class Addic7ed:
                 if status == 'Completed':
                     b['completed'] = 1
                     sub_quality = subs.parent.parent.find_all('a', {'class': 'buttonDownload'})[0].text
+
                     if sub_quality == u'original' or sub_quality == u'most updated':
                         b['best_match'] = 1
                     else:
@@ -309,8 +296,9 @@ class Addic7ed:
                 else:
                     b['completed'] = 0
 
+                print(subteams, teams, "before if ")
                 if subteams.issubset(teams):
-                    b['overlap'] = len(set.intersection(teams, subteams))
+                    b['overlap'] = len(set.intersection(teams, subteams))   # check match of teams
                 else:
                     b['overlap'] = 0
                 result.append(b)
@@ -339,10 +327,9 @@ def process_queue(queue):
         if video['type'] == 'Addic7ed':
             addic7ed_list.append(video)
 
-    print(addic7ed_list)
-    # if addic7ed_list:
-    #     ad = Addic7ed()
-    #     ad.process(addic7ed_list)
+    if addic7ed_list:
+        ad = Addic7ed()
+        ad.process(addic7ed_list)
 
     # time.sleep(0.01)  # To prevent race condition
 
