@@ -256,7 +256,6 @@ class Addic7ed:
         teams = guessed_file_data.get('teams')
 
         lang_url = LANGUAGES[self.lang][0]
-        searchurl = '%s/serie/%s/%s/%s/%s' % (self.host, name, season, episode, lang_url)
 
         name = name.lower().replace(' ', '_')
         teams = set(teams)
