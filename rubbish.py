@@ -82,7 +82,7 @@ def file_paths(input_path):          # mine
 
 input_path = "E:\\Citizen.Khan.S04E01.HDTV.x264-TLA[ettv]"
 
-check_and_add(file_paths(input_path))
+# check_and_add(file_paths(input_path))
 
 
-process_queue(movie_queue)
+# process_queue(movie_queue)

@@ -149,3 +149,7 @@ def process_queue(queue):
     if addic7ed_list:
         ad = Addic7ed()
         ad.process(addic7ed_list)
+
+
+def path():
+    print(os.path)
