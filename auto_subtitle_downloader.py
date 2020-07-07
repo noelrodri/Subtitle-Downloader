@@ -11,30 +11,27 @@ from addic7ed import Addic7ed
 
 
 class FileHandler:
+    VIDEO_EXTENSIONS = [
+        ".avi", ".mp4", ".mkv", ".mpg",
+        ".mpeg", ".mov", ".rm", ".vob",
+        ".wmv", ".flv", ".3gp", ".3g2"
+    ]
+
     def __init__(self, input_path):
         self.input_path = input_path
         self.file_list = []
-        self.output_list = []
-        self.VIDEO_EXTENSIONS = [
-            ".avi", ".mp4", ".mkv", ".mpg",
-            ".mpeg", ".mov", ".rm", ".vob",
-            ".wmv", ".flv", ".3gp", ".3g2"
-        ]
 
     def file_paths(self):
         for folderName, subfolders, filenames in os.walk(self.input_path):
+            print(folderName, filenames)
             for filename in filenames:
-                path = folderName + '\\' + filename
+                if os.name == 'nt':
+                    path = folderName + '\\' + filename
+                else:
+                    path = folderName + '/' + filename
                 self.file_list.append(path)
 
-        for i in self.file_list:
-            glob_path = glob.escape(i.rsplit('\\', 1)[0]) + '\\'
-            for extension in self.VIDEO_EXTENSIONS:
-                # validating video extension
-                for file in glob.glob(glob_path + "*" + extension):
-                    if file not in self.output_list:
-                        self.output_list.append(file)
-        return self.output_list
+        return [i for i in self.file_list if os.path.splitext(i)[-1] in self.VIDEO_EXTENSIONS]
 
 
 if __name__ == "__main__":
@@ -55,15 +52,6 @@ if __name__ == "__main__":
         with open(json_path, "w") as outfile:
             outfile.write(json.dumps(dictionary, indent=2))
 
-    print(subtitle_json['subtitle_path'])
-    # fil = FileHandler(subtitle_json['subtitle_path'])
-    fil = FileHandler('home/noel/Videos/auto_subtitles')
-
-    print(fil.file_paths())
-
-    # sub = SubsceneDowlaod(fil.file_paths())
-    # sub.download_manager()
-    # sub = Subdub(fil.file_paths())
-    # sub.download_manager()
-    # sub.completed
-    # sub.notfound
+    fil = FileHandler(subtitle_json['subtitle_path'])
+    sub = Subdub(fil.file_paths())
+    sub.download_manager()

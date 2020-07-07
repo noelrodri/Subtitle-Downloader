@@ -22,7 +22,7 @@ class Subdub:
         return hashlib.md5(data).hexdigest()
 
     def get_from_subdb(self, file):
-        root, extension = os.path.splitext(file)
+        root, _ = os.path.splitext(file)
         language_code = 'en'
         filename = root + language_code + ".srt"
 
