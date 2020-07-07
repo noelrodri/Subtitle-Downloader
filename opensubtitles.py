@@ -5,6 +5,7 @@ import zlib
 from assist_functions import save_subs
 
 
+
 class OpenSubtitles:
 
     api_url = 'http://api.opensubtitles.org/xml-rpc'
@@ -80,8 +81,10 @@ class OpenSubtitles:
         while search[:500]:
             if not self.stopping:
                 try:
+
                     tempresp = self.server.SearchSubtitles(
                         self.login_token, search[:500])
+
                 except Exception as e:
                     if e.args[0] == 11004:
                         print("No Internet Connection Found", 'error')
@@ -113,8 +116,10 @@ class OpenSubtitles:
             if result['SubBad'] != '1':
                 movie_hash = result.get('MovieHash')
                 if not movie_hash:
+
                     movie_hash = self.imdbid_to_hash[int(
                         result['IDMovieImdb'])]
+
                 subid = result['IDSubtitleFile']
                 downcount = int(result['SubDownloadsCnt'])
                 rating = float(result['SubRating'])
@@ -126,8 +131,10 @@ class OpenSubtitles:
                     continue
 
                 user_rank = user_ranks[result['UserRank']]
+
                 subtitles.setdefault(movie_hash, []).append(
                     (subid, downcount, rating, user_rank, IDMovieImdb))
+
 
         return subtitles
 
@@ -149,17 +156,22 @@ class OpenSubtitles:
             most_common = cnt.most_common(1)[0][0]
             expectedResult = [d for d in found_matches if d[4] == most_common]
             print(expectedResult, "expected")
+
             subtitles[hash] = sorted(
                 found_matches, key=lambda x: (x[3], -x[2], -x[1]))[0]
+
 
         for (hash, filedetails) in self.moviefiles.items():
             if not self.stopping:
                 if subtitles.get(hash):
+
                     print('Saving subtitles for %s' %
                           filedetails['file_name'], 'success')
                     subtitle = self.download_subtitles([subtitles[hash][0]])
                     save_subs(
                         subtitle, filedetails['save_subs_to'], subtitles[hash])
+
+
                 else:
                     print("no sub found")
             else:
@@ -170,5 +182,6 @@ class OpenSubtitles:
         self.check_status(resp)
         decoded = base64.standard_b64decode(
             resp['data'][0]['data'].encode('ascii'))
+
         decompressed = zlib.decompress(decoded, 15 + 32)
         return decompressed
