@@ -1,5 +1,11 @@
 from assist_functions import download_url_content
 from assist_functions import save_subs
+from bs4 import BeautifulSoup
+from assist_functions import guess_file_data
+from operator import itemgetter
+import re
+import traceback
+
 
 class Addic7ed:
 
@@ -14,6 +20,9 @@ class Addic7ed:
         u'Italian': ('7', 'ita'),
     }
 
+    def __init__(self, file_list):
+        self.files_list = file_list
+
     def run(self):
         print('Querying Addic7ed.com...', 'info')
 
@@ -24,7 +33,8 @@ class Addic7ed:
             try:
                 searched_url, downloadlink = self._query(filename)
                 if downloadlink:
-                    subs = self.download_subtitles(searched_url, downloadlink, filename)
+                    subs = self.download_subtitles(
+                        searched_url, downloadlink, filename)
                 else:
                     print('Nothing found.', 'error')
                     print(details_dict)
@@ -72,30 +82,36 @@ class Addic7ed:
         team_split = re.compile(r'\.| - ')
 
         try:
-            sub_list = soup.find_all('td', {'class': 'NewsTitle', 'align': 'center'})
+            sub_list = soup.find_all(
+                'td', {'class': 'NewsTitle', 'align': 'center'})
             result = []
 
             for subs in sub_list:
-                subteams = set(team_split.split(release_pattern.findall(subs.get_text().lower())[0]))
+                subteams = set(team_split.split(
+                    release_pattern.findall(subs.get_text().lower())[0]))
 
                 link = f'http://www.addic7ed.com{subs.parent.parent.select(".buttonDownload")[0].get("href")}'
                 b = {}
                 b['link'] = link
 
                 if subteams.issubset(teams):
-                    b['overlap'] = len(set.intersection(teams, subteams))   # check match of teams
+                    b['overlap'] = len(set.intersection(
+                        teams, subteams))   # check match of teams
                 else:
                     b['overlap'] = 0
 
-                b['download_count'] = int(subs.parent.parent.findAll('td', {'class': 'newsDate', 'colspan': '2'})[0].get_text().strip().split()[4])
+                b['download_count'] = int(subs.parent.parent.findAll(
+                    'td', {'class': 'newsDate', 'colspan': '2'})[0].get_text().strip().split()[4])
 
                 result.append(b)
         except:
-            print('Following unknown exception occured:\n%s' % traceback.format_exc(), 'error')
+            print('Following unknown exception occured:\n%s' %
+                  traceback.format_exc(), 'error')
 
         else:
             if result:
-                best_match = sorted(result, key=itemgetter('overlap', 'download_count'), reverse=True)[0]
+                best_match = sorted(result, key=itemgetter(
+                    'overlap', 'download_count'), reverse=True)[0]
 
         return (searchurl, best_match.get('link') if best_match else None)
 

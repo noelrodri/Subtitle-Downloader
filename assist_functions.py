@@ -1,3 +1,50 @@
+import os
+import struct
+
+
+def get_proxies():
+    from lxml.html import fromstring
+    url = 'https://free-proxy-list.net/'
+    response = requests.get(url)
+    parser = fromstring(response.text)
+    proxies = set()
+    for i in parser.xpath('//tbody/tr'):
+        if i.xpath('.//td[7][contains(text(),"yes")]'):
+            # Grabbing IP and corresponding PORT
+            proxy = ":".join([i.xpath('.//td[1]/text()')[0],
+                              i.xpath('.//td[2]/text()')[0]])
+            proxies.add(proxy)
+    return proxies
+
+
+def request_with_proxies(proxies, url):
+    from itertools import cycle
+    i = 0
+    header = {
+        # make dynamic for better results
+        "User-Agent": 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0'
+    }
+    while True:
+        proxy_pool = cycle(proxies)
+        proxy = next(proxy_pool)
+        print("Subscene Request #%d" % i)
+
+        try:
+            pg = requests.get(url, headers=header, proxies={
+                              "http": proxy, "https": proxy})
+            if pg.status_code == 200:
+                return pg
+
+        except Exception as e:
+            print(e)
+            print("Skipping. Connnection error")
+        i += 1
+
+        if i > len(proxies):
+            print("Exhausted proxies")
+            return 0
+
+
 def is_video_file(filename):
     video_extns = [
         '.avi',
