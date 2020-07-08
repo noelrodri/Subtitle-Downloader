@@ -22,8 +22,7 @@ class FileHandler:
         self.file_list = []
 
     def file_paths(self):
-        for folderName, subfolders, filenames in os.walk(self.input_path):
-            print(folderName, filenames)
+        for folderName, _, filenames in os.walk(self.input_path):
             for filename in filenames:
                 if os.name == 'nt':
                     path = folderName + '\\' + filename
@@ -35,7 +34,6 @@ class FileHandler:
 
 
 if __name__ == "__main__":
-
     json_path = f'{os.path.dirname(os.path.realpath(__file__))}/subtitle_downloader.json'
     if os.path.isfile(json_path):
         with open(json_path, "r") as outfile:
@@ -43,6 +41,14 @@ if __name__ == "__main__":
 
     else:
         subtitle_path = input("Please Enter Path to file containing Movies")
+        while True:
+            if os.path.exists(subtitle_path):
+                break
+            else:
+                subtitle_path = input(
+                    "The entered path was invalid enter path again")
+                break
+
         dictionary = {
             "subtitle_path": subtitle_path,
             "subs_found": [],
@@ -51,6 +57,7 @@ if __name__ == "__main__":
 
         with open(json_path, "w") as outfile:
             outfile.write(json.dumps(dictionary, indent=2))
+        subtitle_json = dictionary
 
     fil = FileHandler(subtitle_json['subtitle_path'])
     sub = Subdub(fil.file_paths())
