@@ -8,6 +8,9 @@ import zipfile
 
 
 class SubsceneDowlaod:
+    first_search_header = "https://subscene.com/subtitles/"
+    subscene_header = "https://subscene.com"
+
     def __init__(self, file_list):
         self.file_list = file_list
         self.yts_re = re.compile(r'yts|YIFY', re.I)
@@ -24,12 +27,8 @@ class SubsceneDowlaod:
             self.subscene_downloader()
 
     def subscene_downloader(self):
-
-        first_search_header = "https://subscene.com/subtitles/"
-        subscene_header = "https://subscene.com"
-
         if self.yts_re.search(self.file_name):
-            url = first_search_header + \
+            url = self.first_search_header + \
                 re.split(self.movie, self.file_name)[0].replace('.', '-')
             pg = request_with_proxies(self.proxies, url)
             if pg:
@@ -44,14 +43,15 @@ class SubsceneDowlaod:
                 if len(output) > 1:
                     download_pg_link = output[0].get('href')
 
-                url = subscene_header + download_pg_link
+                url = self.subscene_header + download_pg_link
                 # could try getting a fresh set of proxies
                 download_pg = request_with_proxies(self.proxies, url)
                 if download_pg:
                     soup = BeautifulSoup(download_pg, 'lxml')
                     download_link = soup.select('.download a[href]')
                     if download_link:
-                        url = subscene_header + download_link[0].get('href')
+                        url = self.subscene_header + \
+                            download_link[0].get('href')
                         subtitle_file = request_with_proxies(self.proxies, url)
                         if subtitle_file:
                             self.subtitle_file_handler(subtitle_file)
@@ -86,7 +86,7 @@ class SubsceneDowlaod:
             subfile.write(chunk)
         subfile.close()
         time.sleep(1)
-        zip_ = zipfile.ZipFile(self.file_path + "{}.zip".format(language))
+        zip_ = zipfile.ZipFile(f'{self.file_path} {language}.zip')
         zip_.extractall(self.file_path)
         zip_.close()
         os.unlink(self.file_path + "{}.zip".format(language))

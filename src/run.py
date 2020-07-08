@@ -59,5 +59,7 @@ if __name__ == "__main__":
         subtitle_json = dictionary
 
     fil = FileHandler(subtitle_json['subtitle_path'])
-    sub = Subdub(fil.file_paths())
+    # sub = Subdub(fil.file_paths())
+    # sub.download_manager()
+    sub = SubsceneDowlaod(fil)
     sub.download_manager()

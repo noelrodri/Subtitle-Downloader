@@ -34,12 +34,12 @@ class Subdub:
             if req.status_code == 200:
                 with open(filename, "wb") as subtitle:
                     subtitle.write(req.content)
-                    print(language_code +
-                          " subtitles successfully downloaded for " + file)
+                    print(
+                        f"{language_code} subtitles successfully downloaded for {root.rsplit('/')[-1]}")
                 self.completed.append(file)
 
             elif req.status_code == 404:
-                print("file not found")
+                print(f"{root.rsplit('/')[-1]} subtitles not found")
                 self.notfound.append(file)
 
             else:
