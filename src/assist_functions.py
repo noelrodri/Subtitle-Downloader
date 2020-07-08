@@ -1,9 +1,12 @@
 import os
 import struct
+from lxml.html import fromstring
+import requests
+import re
 
 
 def get_proxies():
-    from lxml.html import fromstring
+
     url = 'https://free-proxy-list.net/'
     response = requests.get(url)
     parser = fromstring(response.text)

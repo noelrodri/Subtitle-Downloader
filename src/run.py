@@ -47,7 +47,6 @@ if __name__ == "__main__":
             else:
                 subtitle_path = input(
                     "The entered path was invalid enter path again")
-                break
 
         dictionary = {
             "subtitle_path": subtitle_path,
