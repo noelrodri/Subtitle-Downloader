@@ -59,7 +59,7 @@ class Addic7ed:
         self.run()
 
     def _query(self, filename):
-        print('Searching Addic7ed.com for %s' % filename, 'info')
+        print(f'Searching Addic7ed.com for {filename} info')
         guessed_file_data = guess_file_data(filename)
         name = guessed_file_data.get('name')
         season = guessed_file_data.get('season')

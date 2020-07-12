@@ -19,7 +19,7 @@ class FileHandler:
 
     def __init__(self, input_path):
         self.input_path = input_path
-        self.file_list = []
+        self.movie_list = []
 
     def file_paths(self):
         for folderName, _, filenames in os.walk(self.input_path):
@@ -28,9 +28,11 @@ class FileHandler:
                     path = folderName + '\\' + filename
                 else:
                     path = folderName + '/' + filename
-                self.file_list.append(path)
 
-        return [i for i in self.file_list if os.path.splitext(i)[-1] in self.VIDEO_EXTENSIONS]
+                root, extension = os.path.splitext(path)
+                if extension in self.VIDEO_EXTENSIONS and not os.path.exists(root + '.srt'):
+                    self.movie_list.append(path)
+        return self.movie_list
 
 
 if __name__ == "__main__":
@@ -61,5 +63,5 @@ if __name__ == "__main__":
     fil = FileHandler(subtitle_json['subtitle_path'])
     # sub = Subdub(fil.file_paths())
     # sub.download_manager()
-    sub = SubsceneDowlaod(fil)
-    sub.download_manager()
+    # sub = SubsceneDowlaod(fil.file_paths())
+    # sub.download_manager()

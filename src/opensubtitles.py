@@ -5,7 +5,6 @@ import zlib
 from assist_functions import save_subs
 
 
-
 class OpenSubtitles:
 
     api_url = 'http://api.opensubtitles.org/xml-rpc'
@@ -49,7 +48,7 @@ class OpenSubtitles:
     def login(self):
         '''Log in to OpenSubtitles.org'''
 
-        self.server = ServerProxy(self.api_url, verbose=False)
+        self.server = ServerProxy(self.api_url)
 
         try:
             resp = self.server.LogIn('', '', 'en', 'PySubD v2.0')
@@ -135,7 +134,6 @@ class OpenSubtitles:
                 subtitles.setdefault(movie_hash, []).append(
                     (subid, downcount, rating, user_rank, IDMovieImdb))
 
-
         return subtitles
 
     def search_subtitles(self):
@@ -160,7 +158,6 @@ class OpenSubtitles:
             subtitles[hash] = sorted(
                 found_matches, key=lambda x: (x[3], -x[2], -x[1]))[0]
 
-
         for (hash, filedetails) in self.moviefiles.items():
             if not self.stopping:
                 if subtitles.get(hash):
@@ -170,7 +167,6 @@ class OpenSubtitles:
                     subtitle = self.download_subtitles([subtitles[hash][0]])
                     save_subs(
                         subtitle, filedetails['save_subs_to'], subtitles[hash])
-
 
                 else:
                     print("no sub found")
