@@ -7,7 +7,7 @@ import time
 import zipfile
 
 
-class SubsceneDowlaod:
+class SubsceneDowload:
     first_search_header = "https://subscene.com/subtitles/"
     subscene_header = "https://subscene.com"
 

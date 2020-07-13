@@ -22,6 +22,7 @@ class OpenSubtitles:
 
     def __init__(self, parent=None):
         self.stopping = False
+        self.not_found = []
 
     def process(self, files_list, lang='English'):
         self.moviefiles = files_list
@@ -33,9 +34,6 @@ class OpenSubtitles:
     def __del__(self):
         if self.login_token:
             self.logout()
-
-    def stopTask(self):
-        self.stopping = True
 
     def run(self):
         try:
@@ -78,24 +76,20 @@ class OpenSubtitles:
     def _query_opensubs(self, search):
         results = []
         while search[:500]:
-            if not self.stopping:
-                try:
+            try:
+                tempresp = self.server.SearchSubtitles(
+                    self.login_token, search[:500])
 
-                    tempresp = self.server.SearchSubtitles(
-                        self.login_token, search[:500])
-
-                except Exception as e:
-                    if e.args[0] == 11004:
-                        print("No Internet Connection Found", 'error')
-                    else:
-                        print(str(e), 'error')
-                    return results
-                if tempresp['data']:
-                    results.extend(tempresp['data'])
-                self.check_status(tempresp)
-                search = search[500:]
-            else:
-                return []
+            except Exception as e:
+                if e.args[0] == 11004:
+                    print("No Internet Connection Found", 'error')
+                else:
+                    print(str(e), 'error')
+                return results
+            if tempresp['data']:
+                results.extend(tempresp['data'])
+            self.check_status(tempresp)
+            search = search[500:]
 
         return results
 
@@ -125,8 +119,6 @@ class OpenSubtitles:
                 IDMovieImdb = int(result.get('IDMovieImdb', 0))
 
                 if rating and rating < 8:
-                    # Ignore poorly rated subtitles, while not
-                    # penalizing the ones that haven't yet been rated
                     continue
 
                 user_rank = user_ranks[result['UserRank']]
@@ -138,40 +130,30 @@ class OpenSubtitles:
 
     def search_subtitles(self):
         search = []
-        cnt = Counter()
-        for video_file_details in self.moviefiles.values():
+        for video_file_details in self.moviefiles:
             video_file_details['sublanguageid'] = self.lang
             search.append(video_file_details)
-
+        print(search)
         results = self._query_opensubs(search)
-
         subtitles = self.clean_results(results)
         print(subtitles, "clean_results")
         for hash, found_matches in subtitles.items():
-            for dicts in found_matches:
-                cnt[dicts[4]] += 1
-
-            most_common = cnt.most_common(1)[0][0]
-            expectedResult = [d for d in found_matches if d[4] == most_common]
-            print(expectedResult, "expected")
-
             subtitles[hash] = sorted(
                 found_matches, key=lambda x: (x[3], -x[2], -x[1]))[0]
 
-        for (hash, filedetails) in self.moviefiles.items():
-            if not self.stopping:
-                if subtitles.get(hash):
+        for file_details in self.moviefiles:
+            movie_hash = file_details['moviehash']
+            if subtitles.get(movie_hash):
 
-                    print('Saving subtitles for %s' %
-                          filedetails['file_name'], 'success')
-                    subtitle = self.download_subtitles([subtitles[hash][0]])
-                    save_subs(
-                        subtitle, filedetails['save_subs_to'], subtitles[hash])
+                print('Saving subtitles for %s' %
+                      file_details['file_name'], 'success')
+                subtitle = self.download_subtitles([subtitles[hash][0]])
+                save_subs(
+                    subtitle, file_details['save_subs_to'], subtitles[hash])
 
-                else:
-                    print("no sub found")
             else:
-                return
+                print("no sub found")
+                self.not_found.append(file_details)
 
     def download_subtitles(self, subparam):
         resp = self.server.DownloadSubtitles(self.login_token, subparam)

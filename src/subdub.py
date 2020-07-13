@@ -4,12 +4,12 @@ import requests
 
 
 class Subdub:
-    def __init__(self, file_list):
-        self.file_list = file_list
+    def __init__(self, file_object):
+        self.file_list = file_object.movie_list
         self.completed = []
         self.notfound = []
 
-    def download_manager(self):
+    def run(self):
         for file in self.file_list:
             self.get_from_subdb(file)
 
@@ -36,11 +36,10 @@ class Subdub:
                     subtitle.write(req.content)
                     print(
                         f"{language_code} subtitles successfully downloaded for {root.rsplit('/')[-1]}")
-                self.completed.append(file)
+                self.file_list.remove(file)
 
             elif req.status_code == 404:
                 print(f"{root.rsplit('/')[-1]} subtitles not found")
-                self.notfound.append(file)
 
             else:
                 print("Error")
