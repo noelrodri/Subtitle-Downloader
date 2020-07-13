@@ -4,10 +4,11 @@ import time
 import os
 import glob
 import json
-from subscene import SubsceneDowlaod
+from subscene import SubsceneDowload
 from subdub import Subdub
 from opensubtitles import OpenSubtitles
 from addic7ed import Addic7ed
+from assist_functions import calc_file_hash
 
 
 class FileHandler:
@@ -19,18 +20,19 @@ class FileHandler:
 
     def __init__(self, input_path):
         self.input_path = input_path
-        self.file_list = []
+        self.movie_list = []
 
     def file_paths(self):
         for folderName, _, filenames in os.walk(self.input_path):
             for filename in filenames:
-                if os.name == 'nt':
-                    path = folderName + '\\' + filename
-                else:
-                    path = folderName + '/' + filename
-                self.file_list.append(path)
-
-        return [i for i in self.file_list if os.path.splitext(i)[-1] in self.VIDEO_EXTENSIONS]
+                root, extension = os.path.splitext(filename)
+                if extension in self.VIDEO_EXTENSIONS and not os.path.exists(os.path.join(folderName, root + '.srt')):
+                    self.movie_list.append({
+                        'file_name': filename,
+                        'save_subs_to': os.path.join(folderName, os.path.splitext(filename)[0] + '.srt'),
+                        'moviehash': calc_file_hash(os.path.join(folderName, filename)),
+                        'moviebytesize': str(os.path.getsize(os.path.join(folderName, filename)))
+                    })
 
 
 if __name__ == "__main__":
@@ -59,5 +61,7 @@ if __name__ == "__main__":
         subtitle_json = dictionary
 
     fil = FileHandler(subtitle_json['subtitle_path'])
-    sub = Subdub(fil.file_paths())
-    sub.download_manager()
+    fil.file_paths()
+
+    for downloader in [Subdub(fil), SubsceneDowload(fil)]:
+        downloader.run()

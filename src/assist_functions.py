@@ -4,6 +4,21 @@ from lxml.html import fromstring
 import requests
 import re
 
+request_headers = {
+    'Host': 'www.addic7ed.com',
+    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:14.0) Gecko/20100101 Firefox/14.0.1',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-us,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate',
+    'Connection': 'keep-alive',
+}
+
+tv_show_regex = re.compile(
+    r"(?:[^\\]\\)*(?P<SeriesName>.*) S?(?P<SeasonNumber>[0-9]+)(?:[ .XE]+(?P<EpisodeNumber>[0-9]+))(?P<Teams>.*)", re.IGNORECASE)
+
+movie_regex = re.compile(
+    '(?P<movie>.*)[\.|\[|\(| ]{1}(?P<year>(?:(?:19|20)[0-9]{2}))(?P<teams>.*)', re.IGNORECASE)
+
 
 def get_proxies():
 
@@ -186,20 +201,3 @@ def catch_all(site, files):
 
 def save_subs(content, full_path, other_details=None):
     open(full_path, 'wb').write(content)
-
-
-def process_queue(queue):
-    addic7ed_list = []
-    opensubs_dict = {}
-
-    for video in queue:
-        if video['type'] == 'Addic7ed':
-            addic7ed_list.append(video)
-
-    if addic7ed_list:
-        ad = Addic7ed()
-        ad.process(addic7ed_list)
-
-
-def path():
-    print(os.path)
